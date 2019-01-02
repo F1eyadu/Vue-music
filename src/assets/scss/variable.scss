@@ -12,9 +12,9 @@ $color-text-l : rgba(255, 255, 255, 0.5);
 $color-text-ll : rgba(255, 255, 255, 0.8);
 
 //字体定义规范
-$font-size-small-s : 10px;
-$font-size-small : 12px;
-$font-size-medium : 14px;
-$font-size-medium-x : 16px;
-$font-size-large : 18px;
-$font-size-large-x : 22px
+$font-size-small-s : px2rem(10px);
+$font-size-small : px2rem(12px);
+$font-size-medium : px2rem(14px);
+$font-size-medium-x : px2rem(16px);
+$font-size-large : px2rem(18px);
+$font-size-large-x : px2rem(22px)
