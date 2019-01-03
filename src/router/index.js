@@ -20,7 +20,13 @@ export default new Router({
     {
       path: '/singer',
       name: 'singer',
-      component: () => import(/* webpackChunkName: "singer" */ '@/views/singer/singer.vue')
+      component: () => import(/* webpackChunkName: "singer" */ '@/views/singer/singer.vue'),
+      children: [
+        {
+          path: ':id',
+          component: () => import(/* webpackChunkName: "singer-detail" */ '@/views/singer-detail/singer-detail.vue')
+        }
+      ]
     },
     {
       path: '/rank',
