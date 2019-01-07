@@ -27,6 +27,13 @@
                     </div>
                 </div>
                 <div class="bottom">
+                    <div class="process-wrapper">
+                        <span class="time time-l">{{format(currentTime)}}</span>
+                        <div class="process-bar-wrapper">
+                            <process-bar @percentChange="onProgressBarChange" :percent="percent"></process-bar>
+                        </div>
+                        <span class="time time-r">{{format(duration)}}</span>
+                    </div>
                     <div class="operators">
                         <div class="iconfont icon i-left">
                             <i class="icon-random"></i>
@@ -64,7 +71,7 @@
                 </div>
             </div>
         </transition>
-        <audio v-if="url" ref="audio" :src="url" @canplay="ready" @error="error" @ended="ended"></audio>
+        <audio v-if="url" @durationchange="durationchange" @timeupdate="updateTime" ref="audio" :src="url" @canplay="ready" @error="error" @ended="ended"></audio>
     </div>
 </template>
 <script>
@@ -72,12 +79,15 @@ import { mapGetters, mapMutations} from 'vuex'
 import animations from 'create-keyframe-animation'
 import { getSongUrl} from '_api/song'
 import { prefixStyle } from '@/assets/js/dom'
+import ProcessBar from '_c/process-bar/process-bar'
 const transform = prefixStyle('transform')
 export default {
     data() {
         return {
             url: '',
-            songReady: false
+            songReady: false,
+            currentTime: 0,
+            duration: 0
         }
     },
     computed: {
@@ -89,6 +99,9 @@ export default {
         },
         disable() {
             return this.songReady?'':'disable'
+        },
+        percent() {
+            return this.currentTime / this.duration
         },
         ...mapGetters([
             'fullScreen',
@@ -140,6 +153,32 @@ export default {
         },
         error() {
             this.songReady = false
+        },
+        updateTime (e) {
+            this.currentTime = e.target.currentTime
+        },
+        durationchange (e) {
+            this.duration = e.target.duration
+        },
+        format(interval) {
+            interval = interval | 0
+            const minute = this._pad(interval / 60 | 0)
+            const second = this._pad(interval % 60)
+            return `${minute}:${second}`
+        },
+        _pad (num, n = 2) {
+            let len = num.toString().length
+            while(len < n) {
+                num = '0' + num
+                len ++
+            }
+            return num
+        },
+        onProgressBarChange(percent) {
+            this.$refs.audio.currentTime = percent * this.duration
+            if(!this.playing) {
+                this.togglePlaying()
+            }
         },
         ...mapMutations([
             'SET_FULL_SCREEN',
@@ -209,14 +248,16 @@ export default {
             })   
         },
         playing(newVal) {
-            const audio = this.$refs.audio
-            this.$nextTick(() => {
-                newVal ? audio.play() : audio.pause()
-            })
+            setTimeout(() => {
+                newVal ? this.$refs.audio.play() : this.$refs.audio.pause()
+            }, 20)
         },
         url(newVal) {
             this.songReady = true
         }
+    },
+    components: {
+        ProcessBar
     }
 }
 </script>
@@ -371,10 +412,10 @@ export default {
                     }
                 }
             }
-            .progress-wrapper{
+            .process-wrapper{
                 display: flex;
                 align-items: center;
-                width: 80%;
+                width: 85%;
                 margin: 0 auto;
                 padding:  px2rem(10px) 0;
                 .time{
@@ -390,8 +431,9 @@ export default {
                         text-align: right;
                     }
                 }
-                .progress-bar-wrapper{
+                .process-bar-wrapper{
                     flex: 1;
+                    margin: 0 px2rem(10px);
                 }
             }
             .operators{
