@@ -1,15 +1,25 @@
 <template>
     <div class="music-list">
-        <div class="back">
+        <div class="back" @click = "back">
             <i class="iconfont icon-return"></i>
         </div>
         <h1 class="title" v-html="title"></h1>
         <div class="bg-image" :style="bgStyle" ref="bgImage">
-            <div class="filter"></div>
+            <div class="play-wrapper">
+                <div class="play" v-show="songs.length" ref="playBtn">
+                    <i class="iconfont icon-random"></i>
+                    <span class="text">随机播放全部</span>
+                </div>
+            </div>
+            <div class="filter" ref="filter"></div>
         </div>
-        <scroll :data="songs" ref="list" class="list">
+        <div class="bg-layer" ref="layer"></div>
+        <scroll @scroll="scroll" :data="songs" ref="list" class="list" :probe-type="probeType" :listen-scroll="listenScroll">
             <div class="song-list-wrapper">
-                <song-list :songs="songs"></song-list>
+                <song-list @select="selectItem" :songs="songs"></song-list>
+            </div>
+            <div class="loading-container" v-if="!songs.length">
+                <Loading/>
             </div>
         </scroll>
     </div>
@@ -17,6 +27,12 @@
 <script>
 import SongList from '_c/songList/songList'
 import Scroll from '_c/scroll/scroll'
+import Loading from '_c/loading/loading'
+import { prefixStyle} from '@/assets/js/dom'
+const RESERVED_HEIGHT = 40
+const transform = prefixStyle('transform')
+const backdrop = prefixStyle('backdrop-filter')
+import { mapActions} from 'vuex'
 export default {
     props: {
         bgImage: {
@@ -32,17 +48,75 @@ export default {
             default: ''
         }
     },
+    data() {
+        return {
+            scrollY: 0
+        }
+    },
     computed: {
         bgStyle() {
             return `background-image: url('${this.bgImage}')`
         }
     },
+    created() {
+        this.probeType = 3
+        this.listenScroll = true
+    },
     mounted() {
-        this.$refs.list.$el.style.top = `${this.$refs.bgImage.clientHeight}px`
+        this.imageHeight = this.$refs.bgImage.clientHeight
+        this.minTranslateY = -this.imageHeight + RESERVED_HEIGHT
+        this.$refs.list.$el.style.top = `${this.imageHeight}px`
+    },
+    methods: {
+        scroll(pos) {
+            this.scrollY = pos.y
+        },
+        back () {
+            this.$router.back()
+        },
+        selectItem(item, index) {
+            this.selectPlay({
+                list: this.songs,
+                index
+            })
+        },
+        ...mapActions([
+            'selectPlay'
+        ])
+    },
+    watch:{
+        scrollY(newY) {
+            let translateY = Math.max(this.minTranslateY, newY)
+            let zIndex = 0
+            let scale = 1
+            let blur = 0
+            this.$refs.layer.style[transform] = `translate3d(0,${translateY}px, 0)`
+            const percent = Math.abs(newY / this.imageHeight)
+            if(newY > 0) {
+                scale = 1 + percent
+                zIndex = 10
+            }else {
+                blur = Math.min(20* percent, 20)
+            }
+            this.$refs.filter.style[backdrop] = `blur(${blur}px)`
+            if(newY < this.minTranslateY) {
+                zIndex = 10
+                this.$refs.bgImage.style.paddingTop = 0
+                this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
+                this.$refs.playBtn.style.display = 'none'
+            }else {
+                this.$refs.bgImage.style.paddingTop = '70%'
+                this.$refs.bgImage.style.height = '0px'
+                this.$refs.playBtn.style.display = 'block'
+            }
+            this.$refs.bgImage.style.zIndex = zIndex
+            this.$refs.bgImage.style[transform] = `scale(${scale})`
+        }
     },
     components: {
         SongList,
-        Scroll
+        Scroll,
+        Loading
     }
 }
 </script>
@@ -101,7 +175,7 @@ export default {
                 color: $color-theme;
                 border-radius: px2rem(100px);
                 font-size: 0;
-                .icon-play {
+                .icon-random {
                     display: inline-block;
                     vertical-align: middle;
                     margin-right: px2rem(6px);
@@ -141,7 +215,7 @@ export default {
             position: absolute;
             width: 100%;
             top: 50%;
-            transform: translateX(-50%);
+            transform: translateY(-50%);
         }
     }
 }
