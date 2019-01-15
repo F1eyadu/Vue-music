@@ -17,7 +17,11 @@
                     <h1 class="title no-wrap" v-html = "currentSong.name"></h1>
                     <h2 class="subtitle" v-html = "currentSong.singer"></h2>
                 </div>
-                <div class="middle">
+                <div class="middle" 
+                    @touchstart.prevent = "middelTouchStart"
+                    @touchmove.prevent = "middelTouchMove"
+                    @touchend.prevent = "middelTouchEnd"
+                >
                     <div class="middel-l">
                         <div class="cd-wrapper" ref="cdWrapper">
                             <div class="cd" :class="play">
@@ -25,8 +29,25 @@
                             </div>
                         </div>
                     </div>
+                    <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+                        <div class="lyric-wrapper">
+                            <div v-if="currentLyric">
+                                <p ref="lyricLine" class="text" 
+                                    v-for="(item, index) in currentLyric.lines"
+                                    :key="index"
+                                    :class="{'current': index == currentLineNumber}"
+                                > 
+                                    {{item.txt}}
+                                </p>
+                            </div>
+                        </div>
+                    </scroll>
                 </div>
                 <div class="bottom">
+                    <div class="dot-wrapper">
+                        <div class="dot" :class="{active: currentShow == 'cd'}"></div>
+                        <div class="dot" :class="{active: currentShow == 'clyric'}"></div>
+                    </div>
                     <div class="process-wrapper">
                         <span class="time time-l">{{format(currentTime)}}</span>
                         <div class="process-bar-wrapper">
@@ -85,6 +106,8 @@ import ProcessBar from '_c/process-bar/process-bar'
 import ProcessCircle from '_c/process-circle/process-circle'
 import {playMode } from '@/assets/js/config'
 import {shuffle } from '@/assets/js/tool'
+import Lyric from 'lyric-parser'
+import Scroll from '_c/scroll/scroll'
 const transform = prefixStyle('transform')
 export default {
     data() {
@@ -92,8 +115,14 @@ export default {
             url: '',
             songReady: false,
             currentTime: 0,
-            duration: 0
+            duration: 0,
+            currentLyric: {},
+            currentLineNumber: 0,
+            currentShow: 'cd'
         }
+    },
+    created() {
+        this.touch = {}
     },
     computed: {
         playIcon() {
@@ -275,6 +304,55 @@ export default {
                 y,
                 scale
             }
+        },
+        handleLyric({lineNum, txt}) {
+            this.currentLineNumber = lineNum
+            if(lineNum > 5) {
+                let lineEL = this.$refs.lyricLine[lineNum - 5]
+                this.$refs.lyricList.scrollToElement(lineEL, 1000)
+            }else{
+                this.$refs.lyricList.scrollTo(0, 0, 1000)
+            }
+        },
+        middelTouchStart(e) {
+            this.touch.initiated = true
+            const touch = e.touches[0]
+            this.touch.startX = touch.pageX
+            this.touch.startY = touch.pageY
+        },
+        middelTouchMove(e) {
+            if(!this.touch.initiated) {
+                return
+            }
+            const touch = e.touches[0]
+            const delatX = touch.pageX - this.touch.startX
+            const delatY = touch.pageY - this.touch.startY
+            if(Math.abs(delatY) > Math.abs(delatX)) {
+                return 
+            }
+            const left = this.currentShow === 'cd' ? 0 : -window.innerWidth
+            const width = Math.min(0, Math.max(-window.innerWidth, left + delatX))
+            this.touch.percent = Math.abs(width / window.innerWidth)
+            this.$refs.lyricList.$el.style[transform] = `translate3d(${width}px, 0, 0)`
+        },
+        middelTouchEnd() {
+            let width
+            if(this.currentShow == 'cd') {
+                if(this.touch.percent > 0.1) {
+                    width = -window.innerWidth
+                    this.currentShow = 'lyric'
+                }else {
+                    width = 0
+                }
+            }else{
+                if(this.touch.percent < 0.9) {
+                    width = 0
+                    this.currentShow = 'cd'
+                }else{
+                    width = -window.innerWidth
+                }
+            }
+            this.$refs.lyricList.$el.style[transform] = `translate3d(${width}px, 0, 0)`
         }
     },
     watch: {
@@ -282,12 +360,14 @@ export default {
             if(newVal.id === oldVal.id) return
             Promise.all([getSongUrl(newVal.id), getSongLyric(newVal.id)]).then((res) => {
                 this.url = res[0]
-                this.lyric = res[1]
+                let lyric = res[1]
+                this.currentLyric =new Lyric(lyric, this.handleLyric)
+                if(this.playing) {
+                    this.currentLyric.play()
+                }
                 this.$nextTick(() => {
                     this.$refs.audio.play()
                 })
-            }).catch(err => {
-                console.log(err)
             })
             // getSongUrl(newVal.id).then((res) => {
             //     this.url = res
@@ -310,7 +390,8 @@ export default {
     },
     components: {
         ProcessBar,
-        ProcessCircle
+        ProcessCircle,
+        Scroll
     }
 }
 </script>
