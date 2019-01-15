@@ -54,6 +54,8 @@ export default {
             this.$refs.processBtn.style[transform] = `translate3d(${offsetWidth}px, 0 ,0)`
        },
        progressClick(e) {
+           const rect = this.$refs.processBar.getBoundingClientRect()
+           const offsetWidth = e.pageX - rect.left
            this._offset(e.offsetX)
            this._triggerPercent()
        }

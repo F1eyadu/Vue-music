@@ -1,11 +1,20 @@
 import axios from 'axios'
-import { SONGURL} from './baseUrl'
+import { SONGURL, SONGLYRICURL } from './baseUrl'
 export function getSongUrl(songId) {
-    const url = SONGURL + songId
-    return axios.get(url)
-      .then(res => {
-        if (res.status === 200) {
-          return Promise.resolve(res.data.data[0].url)
-        }
-      })
+  const url = SONGURL + songId
+  return axios.get(url)
+    .then(res => {
+      if (res.status === 200) {
+        return Promise.resolve(res.data.data[0].url)
+      }
+    })
+}
+export function getSongLyric(songId) {
+  const url = SONGLYRICURL + songId
+  return axios.get(url)
+    .then(res => {
+      if (res.status === 200) {
+        return Promise.resolve(res.data.lrc.lyric)
+      }
+    })
 }

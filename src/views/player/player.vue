@@ -35,8 +35,8 @@
                         <span class="time time-r">{{format(duration)}}</span>
                     </div>
                     <div class="operators">
-                        <div class="iconfont icon i-left">
-                            <i class="icon-random"></i>
+                        <div class="iconfont icon i-left" @click="changeMode">
+                            <i :class="iconMode"></i>
                         </div>
                         <div class="iconfont icon i-left" :class="disable">
                             <i @click="prev" class="icon-prev"></i>
@@ -64,7 +64,9 @@
                     <p class="desc no-wrap" v-html = "currentSong.singer"></p>
                 </div>
                 <div class="control">
-                    <div @click.stop="togglePlaying" class="iconfont" :class="playIcon"></div>
+                    <process-circle :radius="32" :percent="percent">
+                        <div @click.stop="togglePlaying" class="iconfont" :class="playIcon"></div>
+                    </process-circle>
                 </div>
                 <div class="control">
                     <div class="iconfont icon-list"></div>
@@ -77,9 +79,12 @@
 <script>
 import { mapGetters, mapMutations} from 'vuex'
 import animations from 'create-keyframe-animation'
-import { getSongUrl} from '_api/song'
+import { getSongUrl, getSongLyric} from '_api/song'
 import { prefixStyle } from '@/assets/js/dom'
 import ProcessBar from '_c/process-bar/process-bar'
+import ProcessCircle from '_c/process-circle/process-circle'
+import {playMode } from '@/assets/js/config'
+import {shuffle } from '@/assets/js/tool'
 const transform = prefixStyle('transform')
 export default {
     data() {
@@ -103,12 +108,17 @@ export default {
         percent() {
             return this.currentTime / this.duration
         },
+        iconMode() {
+            return this.mode === playMode['sequence'] ? 'icon-list': this.mode === playMode['loop'] ? 'icon-loop':'icon-random'
+        },
         ...mapGetters([
             'fullScreen',
             'playList',
             'currentSong',
             'playing',
-            'currentIndex'
+            'currentIndex',
+            'mode',
+            'sequenceList'
         ])
     },
     methods: {
@@ -146,7 +156,15 @@ export default {
             this.songReady = false
         },
         ended() {
-            this.next()
+            if(this.mode === playMode.loop) {
+                this.loop()
+            }else{
+                this.next()
+            }
+        },
+        loop() {
+            this.$refs.audio.currentTime = 0
+            this.$refs.audio.play()
         },
         ready() {
             this.songReady = true
@@ -159,6 +177,24 @@ export default {
         },
         durationchange (e) {
             this.duration = e.target.duration
+        },
+        changeMode() {
+            const mode = (this.mode + 1) % 3
+            this.SET_MODE(mode)
+            let list = null
+            if(mode === playMode.random) {
+                list = shuffle(this.sequenceList)
+            }else{
+                list = this.sequenceList
+            }
+            this._resetCurrentIndex(list)
+            this.SET_PLAT_LIST(list)
+        },
+        _resetCurrentIndex(list) {
+            let index = list.findIndex((value) => {
+                return value.id === this.currentSong.id
+            })
+            this.SET_CURRENT_INDEX(index)
         },
         format(interval) {
             interval = interval | 0
@@ -183,6 +219,9 @@ export default {
         ...mapMutations([
             'SET_FULL_SCREEN',
             'SET_PLAYING',
+            'SET_CURRENT_INDEX',
+            'SET_MODE',
+            'SET_PLAT_LIST',
             'SET_CURRENT_INDEX'
         ]),
         enter(el, done) {
@@ -239,13 +278,26 @@ export default {
         }
     },
     watch: {
-        currentSong(newVal) {
-            getSongUrl(newVal.id).then((res) => {
-                this.url = res
+        currentSong(newVal, oldVal) {
+            if(newVal.id === oldVal.id) return
+            Promise.all([getSongUrl(newVal.id), getSongLyric(newVal.id)]).then((res) => {
+                this.url = res[0]
+                this.lyric = res[1]
                 this.$nextTick(() => {
                     this.$refs.audio.play()
                 })
-            })   
+            }).catch(err => {
+                console.log(err)
+            })
+            // getSongUrl(newVal.id).then((res) => {
+            //     this.url = res
+            //     this.$nextTick(() => {
+            //         this.$refs.audio.play()
+            //     })
+            // }) 
+            // getSongLyric(newVal.id).then((response) => {
+
+            // })
         },
         playing(newVal) {
             setTimeout(() => {
@@ -257,7 +309,8 @@ export default {
         }
     },
     components: {
-        ProcessBar
+        ProcessBar,
+        ProcessCircle
     }
 }
 </script>
@@ -509,7 +562,7 @@ export default {
                 &.play{
                     animation: rotate 10s linear infinite
                 }
-                &.pasue{
+                &.pause{
                     animation-play-state: paused;
                 }
             }
@@ -539,11 +592,12 @@ export default {
                 font-size: px2rem(30px);
                 color: $color-theme-d
             }
-            .icon-mini{
-                font-size: px2rem(32px);
+            .icon-play, .icon-pause{
+                color: $color-theme-d;
+                font-size: px2rem(34px);
                 position: absolute;
-                left: 0;
-                top: 0
+                left: -1px;
+                top: -1px;
             }
         }
     }

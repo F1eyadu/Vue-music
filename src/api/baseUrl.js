@@ -3,3 +3,4 @@ export const SONGSHEET = 'api/top/playlist/highquality?before=1503639064232&limi
 export const SINGER = 'api/top/artists?offset=0&limit=100'
 export const SINGERDETAIL = 'api/artists?id='
 export const SONGURL = 'api/song/url?id='
+export const SONGLYRICURL = 'api/lyric?id='
