@@ -10,7 +10,13 @@ export default new Router({
     {
       path: '/recommend',
       name: 'recommend',
-      component: () => import(/* webpackChunkName: "recommend" */ '@/views/recommend/recommend.vue')
+      component: () => import(/* webpackChunkName: "recommend" */ '@/views/recommend/recommend.vue'),
+      children: [
+        { 
+          path: ':id',
+          component: () => import(/* webpackChunkName: "desc" */ '_c/desc/desc.vue')
+        }
+      ]
     },
     {
       path: '/search',

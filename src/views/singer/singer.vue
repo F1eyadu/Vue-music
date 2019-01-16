@@ -1,6 +1,6 @@
 <template>
-    <div class="singer">
-        <list-view :data="singers" @select="select"></list-view>
+    <div class="singer" ref="singer">
+        <list-view :data="singers" @select="select" ref="list"></list-view>
         <router-view/>
     </div>
 </template>
@@ -9,7 +9,9 @@ import { getSingers} from '_api/singer'
 import { ConvertPinyin} from '@/assets/js/util'
 import ListView from '_c/listView/listView'
 import { mapMutations} from 'vuex'
+import { playlistMixin } from '@/assets/js/mixin'
 export default {
+    mixins: [playlistMixin],
     data () {
         return {
             singers: []
@@ -54,6 +56,11 @@ export default {
                 path: `/singer/${item.id}`
             })
             this.setSinger(item)
+        },
+        handlePlayList(playlist) {
+            const bottom = playlist.length > 0 ? '60px' : ''
+            this.$refs.singer.style.bottom = bottom
+            this.$refs.list.refresh()
         },
         ...mapMutations({
             setSinger: 'SET_SINGER'

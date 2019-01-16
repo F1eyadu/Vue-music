@@ -1,3 +1,4 @@
+
 const getters = {
     singer(state) {
         return state.singer
@@ -23,6 +24,9 @@ const getters = {
     currentSong(state) {
         return state.playList[state.currentIndex] || {}
         
+    },
+    currentDesc(state) {
+        return state.desc
     }
 }
 export default getters

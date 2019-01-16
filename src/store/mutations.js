@@ -21,6 +21,9 @@ const mutations = {
     },
     SET_MODE (state, mode) {
         state.mode = mode
+    },
+    SET_CURRENT_DESC (state, desc) {
+        state.desc = desc
     }
 }
 

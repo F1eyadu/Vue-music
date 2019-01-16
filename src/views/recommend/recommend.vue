@@ -13,7 +13,7 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li v-for="(item, index) in discList" :key="index" class="item">
+            <li @click="handleDesc(item)" v-for="(item, index) in discList" :key="index" class="item">
               <div class="icon">
                 <img width="60" height="60" v-lazy="item.coverImgUrl"/>
               </div>
@@ -29,6 +29,7 @@
         <loading />
       </div>
     </scroll>
+    <router-view/>
   </div>
 </template>
 <script>
@@ -37,7 +38,10 @@ import Scroll from '_c/scroll/scroll'
 import Loading from '_c/loading/loading'
 import 'swiper/dist/css/swiper.css'
 import { swiper, swiperSlide } from 'vue-awesome-swiper'
+import { playlistMixin } from '@/assets/js/mixin'
+import { mapMutations } from 'vuex'
 export default {
+  mixins: [playlistMixin],
   data () {
     return {
       banners: [],
@@ -71,7 +75,21 @@ export default {
         this.checkLoaded = true
         this.$refs.scroll.refresh()
       }
-    }
+    },
+    handlePlayList(playlist) {
+      const bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.recommend.style.bottom = bottom
+      this.$refs.scroll.refresh()
+    },
+    handleDesc(item) {
+      this.$router.push({
+        path: `/recommend/${item.id}`
+      })
+      this.SET_CURRENT_DESC(item)
+    },
+    ...mapMutations([
+      'SET_CURRENT_DESC'
+    ])
   },
   components: {
     swiper,

@@ -33,7 +33,9 @@ const RESERVED_HEIGHT = 40
 const transform = prefixStyle('transform')
 const backdrop = prefixStyle('backdrop-filter')
 import { mapActions} from 'vuex'
+import { playlistMixin } from '@/assets/js/mixin'
 export default {
+    mixins: [playlistMixin],
     props: {
         bgImage: {
             type: String,
@@ -41,7 +43,7 @@ export default {
         },
         songs: {
             type:Array,
-            default: []
+            default: () => []
         },
         title: {
             type: String,
@@ -82,6 +84,11 @@ export default {
         },
         random() {
             this.randomPlay({list: this.songs})
+        },
+        handlePlayList(playlist) {
+            const bottom = playlist.length > 0 ? '60px' : ''
+            this.$refs.list.$el.style.bottom = bottom
+            this.$refs.list.refresh()
         },
         ...mapActions([
             'selectPlay',
