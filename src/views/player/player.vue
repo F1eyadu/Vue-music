@@ -22,11 +22,14 @@
                     @touchmove.prevent = "middelTouchMove"
                     @touchend.prevent = "middelTouchEnd"
                 >
-                    <div class="middel-l">
+                    <div class="middel-l" ref="cdMiddle">
                         <div class="cd-wrapper" ref="cdWrapper">
                             <div class="cd" :class="play">
                                 <img class="image" :src=" currentSong.image"/>
                             </div>
+                        </div>
+                        <div class="playing-lyric-wrapper">
+                            <div class="playing-lyric">{{currentPlayLyric}}</div>
                         </div>
                     </div>
                     <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
@@ -109,6 +112,7 @@ import {shuffle } from '@/assets/js/tool'
 import Lyric from 'lyric-parser'
 import Scroll from '_c/scroll/scroll'
 const transform = prefixStyle('transform')
+const transitionDuration = prefixStyle('transitionDuration')
 export default {
     data() {
         return {
@@ -118,7 +122,8 @@ export default {
             duration: 0,
             currentLyric: {},
             currentLineNumber: 0,
-            currentShow: 'cd'
+            currentShow: 'cd',
+            currentPlayLyric: ''
         }
     },
     created() {
@@ -158,29 +163,41 @@ export default {
             this.SET_FULL_SCREEN(true)
         },
         togglePlaying() {
+            if(!this.songReady) return
             this.SET_PLAYING(!this.playing)
+            if(this.currentLyric) {
+                this.currentLyric.togglePlay()
+            }
         },
         prev() {
             if(!this.songReady) return
-            let index = this.currentIndex - 1
-            if( index === -1) {
-                index = this.playList.length - 1
-            }
-            this.SET_CURRENT_INDEX(index)
-            if(!this.playing) {
-                this.togglePlaying()
+            if(this.playList.length === 1) {
+                this.loop()
+            }else{
+                let index = this.currentIndex - 1
+                if( index === -1) {
+                    index = this.playList.length - 1
+                }
+                this.SET_CURRENT_INDEX(index)
+                if(!this.playing) {
+                    this.togglePlaying()
+                }
             }
             this.songReady = false
         },
         next() {
             if(!this.songReady) return
-            let index = this.currentIndex + 1
-            if( index === this.playList.length) {
-                index = 0
-            }
-            this.SET_CURRENT_INDEX(index)
-            if(!this.playing) {
-                this.togglePlaying()
+            if(this.playList.length === 1) {
+                this.loop()
+            }else{
+                let index = this.currentIndex + 1
+                if( index === this.playList.length) {
+                    index = 0
+                }
+                this.SET_CURRENT_INDEX(index)
+                if(!this.playing) {
+                    this.togglePlaying()
+                }
             }
             this.songReady = false
         },
@@ -194,6 +211,9 @@ export default {
         loop() {
             this.$refs.audio.currentTime = 0
             this.$refs.audio.play()
+            if(this.currentLyric) {
+                this.currentLyric.seek(0)
+            }
         },
         ready() {
             this.songReady = true
@@ -243,6 +263,8 @@ export default {
             this.$refs.audio.currentTime = percent * this.duration
             if(!this.playing) {
                 this.togglePlaying()
+            }if(this.currentLyric) {
+                this.currentLyric.seek(percent * this.duration * 1000)
             }
         },
         ...mapMutations([
@@ -313,6 +335,7 @@ export default {
             }else{
                 this.$refs.lyricList.scrollTo(0, 0, 1000)
             }
+            this.currentPlayLyric = txt
         },
         middelTouchStart(e) {
             this.touch.initiated = true
@@ -333,31 +356,45 @@ export default {
             const left = this.currentShow === 'cd' ? 0 : -window.innerWidth
             const width = Math.min(0, Math.max(-window.innerWidth, left + delatX))
             this.touch.percent = Math.abs(width / window.innerWidth)
+            this.$refs.cdMiddle.style.opacity = 1 - this.touch.percent
+            this.$refs.cdMiddle.style[transitionDuration] = 0
             this.$refs.lyricList.$el.style[transform] = `translate3d(${width}px, 0, 0)`
+            this.$refs.lyricList.$el.style[transitionDuration] = 0
         },
         middelTouchEnd() {
             let width
+            let opacity
             if(this.currentShow == 'cd') {
                 if(this.touch.percent > 0.1) {
                     width = -window.innerWidth
+                    opacity = 0
                     this.currentShow = 'lyric'
                 }else {
                     width = 0
+                    opacity = 1
                 }
             }else{
                 if(this.touch.percent < 0.9) {
                     width = 0
+                    opacity = 1
                     this.currentShow = 'cd'
                 }else{
+                    opacity = 0
                     width = -window.innerWidth
                 }
             }
+            this.$refs.cdMiddle.style.opacity = opacity
+            this.$refs.cdMiddle.style[transitionDuration] = '300ms'
             this.$refs.lyricList.$el.style[transform] = `translate3d(${width}px, 0, 0)`
+            this.$refs.lyricList.$el.style[transitionDuration] = '300ms'
         }
     },
     watch: {
         currentSong(newVal, oldVal) {
             if(newVal.id === oldVal.id) return
+            if(this.currentLyric &&  this.currentLyric.stop) {
+                this.currentLyric.stop()
+            }
             Promise.all([getSongUrl(newVal.id), getSongLyric(newVal.id)]).then((res) => {
                 this.url = res[0]
                 let lyric = res[1]
@@ -368,16 +405,11 @@ export default {
                 this.$nextTick(() => {
                     this.$refs.audio.play()
                 })
+            }).catch(() => {
+                this.currentLyric = null
+                this.currentPlayLyric = ''
+                this.currentLineNumber = 0
             })
-            // getSongUrl(newVal.id).then((res) => {
-            //     this.url = res
-            //     this.$nextTick(() => {
-            //         this.$refs.audio.play()
-            //     })
-            // }) 
-            // getSongLyric(newVal.id).then((response) => {
-
-            // })
         },
         playing(newVal) {
             setTimeout(() => {
