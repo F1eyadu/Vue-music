@@ -1,19 +1,57 @@
 <template>
     <div class="search">
         <div class="search-box-wrapper">
-            <search-box/>
+            <search-box @query="listenQuery" ref="searchBox"></search-box>
         </div>
+        <div class="shortcut-wrapper">
+            <div class="shortcut">
+                <div class="hot-key">
+                    <h1 class="title">热门搜索</h1>
+                    <ul>
+                        <li @click="addQuery(item.first)" v-for="(item, index) in hots" :key="index" class="item">{{item.first}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <search-suggest :query="query"></search-suggest>
     </div>
 </template>
 <script>
 import SearchBox from '_c/searchBox/searchBox'
+import SearchSuggest from '_c/suggest/suggest'
+import { searchHot } from '_api/search'
 export default {
+    data() {
+        return {
+            hots: [],
+            query: ''
+        }
+    },
+    created() {
+        this._getSearchHot()
+    },
+    methods: {
+        _getSearchHot() {
+            searchHot().then( res => {
+                this.hots = res
+            })
+        },
+        addQuery(txt) {
+            this.$refs.searchBox.setQuery(txt)
+        },
+        listenQuery(query) {
+            this.query = query
+        }
+    },
     components:{ 
-        SearchBox
+        SearchBox,
+        SearchSuggest
     }
 }
 </script>
 <style lang="scss" scoped>
+@import '@/assets/scss/variable';
+@import '@/assets/scss/mixin';
     .search{
         .search-box-wrapper{
             margin: px2rem(20px);
