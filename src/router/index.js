@@ -37,7 +37,13 @@ export default new Router({
     {
       path: '/rank',
       name: 'rank',
-      component: () => import(/* webpackChunkName: "rank" */ '@/views/rank/rank.vue')
+      component: () => import(/* webpackChunkName: "rank" */ '@/views/rank/rank.vue'),
+      children: [
+        {
+          path: ':id',
+          component: () => import(/* webpackChunkName: rank-detail" */ '_c/topList/topList.vue')
+        }
+      ]
     }
   ]
 })

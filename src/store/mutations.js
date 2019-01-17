@@ -24,6 +24,9 @@ const mutations = {
     },
     SET_CURRENT_DESC (state, desc) {
         state.desc = desc
+    },
+    SET_TOP_LIST (state, topList) {
+        state.topList = topList
     }
 }
 

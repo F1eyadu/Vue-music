@@ -27,6 +27,9 @@ const getters = {
     },
     currentDesc(state) {
         return state.desc
+    },
+    currentTopList(state) {
+        return state.topList
     }
 }
 export default getters
