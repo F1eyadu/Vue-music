@@ -1,5 +1,5 @@
 import { playMode} from '@/assets/js/config'
-import { shuffle, saveSearch} from '@/assets/js/tool'
+import { shuffle, saveSearch, deleteSearch} from '@/assets/js/tool'
 import { SET_PLAYING, SET_FULL_SCREEN, SET_PLAT_LIST, SET_SEQUENCE_LIST, SET_CURRENT_INDEX, SET_MODE, SET_SEARCH_HISTORY } from './mutationTypes'
 const actions = {
     selectPlay({commit, state}, {list, index}) {
@@ -59,8 +59,11 @@ const actions = {
         commit(SET_FULL_SCREEN, true)
         commit(SET_PLAYING, true)
     },
-    saveSearchHistory({commit, state}, query) {
+    saveSearchHistory({commit}, query) {
         commit(SET_SEARCH_HISTORY, saveSearch(query))
+    },
+    deleteSearchHistory({commit}, query) {
+        commit(SET_SEARCH_HISTORY, deleteSearch(query))
     }   
 }
 

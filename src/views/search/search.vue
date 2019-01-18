@@ -3,24 +3,26 @@
         <div class="search-box-wrapper">
             <search-box  @query="listenQuery" ref="searchBox"></search-box>
         </div>
-        <div class="shortcut-wrapper" v-show="!query">
-            <div class="shortcut">
-                <div class="hot-key">
-                    <h1 class="title">热门搜索</h1>
-                    <ul>
-                        <li @click="addQuery(item.first)" v-for="(item, index) in hots" :key="index" class="item">{{item.first}}</li>
-                    </ul>
+        <div class="shortcut-wrapper" ref="shortcutWrapper" v-show="!query">
+            <scroll :refreshDelay="refreshDelay" class="shortcut" ref="shortcut" :data="shortcut">
+                <div>
+                    <div class="hot-key">
+                        <h1 class="title">热门搜索</h1>
+                        <ul>
+                            <li @click="addQuery(item.first)" v-for="(item, index) in hots" :key="index" class="item">{{item.first}}</li>
+                        </ul>
+                    </div>
+                    <div class="search-history" v-show="getHistory.length > 0">
+                        <h1 class="title">
+                            <span class="text">搜索历史</span>
+                            <span class="clear" >
+                                <i class="iconfont icon-delete"></i>
+                            </span>
+                        </h1>
+                        <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="getHistory"></search-list>
+                    </div>
                 </div>
-                <div class="search-history" v-show="getHistory.length > 0">
-                    <h1 class="title">
-                        <span class="text">搜索历史</span>
-                        <span class="clear">
-                            <i class="iconfont icon-delete"></i>
-                        </span>
-                    </h1>
-                    <search-list :searches="getHistory"></search-list>
-                </div>
-            </div>
+            </scroll>
         </div>
         <div class="search-result" v-show="query">
             <search-suggest @select="saveSearch"  @listScroll="blurInput" :query="query"></search-suggest>
@@ -31,9 +33,12 @@
 import SearchBox from '_c/searchBox/searchBox'
 import SearchSuggest from '_c/suggest/suggest'
 import SearchList from '_c/searchList/searchList'
+import Scroll from '_c/scroll/scroll'
 import { searchHot } from '_api/search'
 import { mapActions, mapGetters} from 'vuex'
+import { searchMixin } from '@/assets/js/mixin'
 export default {
+    mixins: [searchMixin],
     data() {
         return {
             hots: [],
@@ -44,9 +49,9 @@ export default {
         this._getSearchHot()
     },
     computed: {
-        ...mapGetters([
-            'getHistory'
-        ])
+        shortcut() {
+            return this.hots.concat(this.getHistory)
+        }
     },
     methods: {
         _getSearchHot() {
@@ -54,15 +59,7 @@ export default {
                 this.hots = res
             })
         },
-        addQuery(txt) {
-            this.$refs.searchBox.setQuery(txt)
-        },
-        listenQuery(query) {
-            this.query = query
-        },
-        blurInput() {
-            this.$refs.searchBox.blur()
-        },
+        
         saveSearch() {
             this.saveSearchHistory(this.query)
         },
@@ -73,7 +70,8 @@ export default {
     components:{ 
         SearchBox,
         SearchSuggest,
-        SearchList
+        SearchList,
+        Scroll
     }
 }
 </script>

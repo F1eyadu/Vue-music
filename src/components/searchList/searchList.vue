@@ -1,13 +1,15 @@
 <template>
     <div class="search-list" v-show="searches.length">
-        <ul>
-            <li class="search-item" v-for="(item,index) in searches" :key="index">
-                <span class="text">{{item}}</span>
-                <span class="icon">
-                    <i class="iconfont icon-cancel"></i>
-                </span>
-            </li>
-        </ul>
+        <transition>
+            <ul>
+                <li @click="selectItem(item)" class="search-item" v-for="(item,index) in searches" :key="index">
+                    <span class="text">{{item}}</span>
+                    <span class="icon">
+                        <i @click.stop="deleteOne(item)" class="iconfont icon-cancel"></i>
+                    </span>
+                </li>
+            </ul>
+        </transition>
     </div>
 </template>
 <script>
@@ -16,6 +18,14 @@ export default {
         searches: {
             type: Array,
             default: () => []
+        }
+    },
+    methods: {
+        selectItem(item) {
+            this.$emit('select', item)
+        },
+        deleteOne(item) {
+            this.$emit('delete', item)
         }
     }
 }
