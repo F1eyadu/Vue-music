@@ -13,7 +13,7 @@ export function searchSuggest(keyWord,page) {
     return axios.get(url)
     .then( res => {
         if(res.status === 200) {
-            return Promise.resolve(res.data.result.songs)
+            return Promise.resolve(res.data.result)
         }
     })
 }

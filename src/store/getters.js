@@ -30,6 +30,9 @@ const getters = {
     },
     currentTopList(state) {
         return state.topList
+    },
+    getHistory(state) {
+        return state.searchHistory
     }
 }
 export default getters

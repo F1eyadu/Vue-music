@@ -1,4 +1,5 @@
 import { playMode} from '@/assets/js/config'
+import { loadSearch } from '@/assets/js/tool'
 const state = {
     singer: {},
     playing: false,
@@ -8,7 +9,8 @@ const state = {
     mode: playMode.sequence,
     currentIndex: -1,
     desc: {},
-    topList: {}
+    topList: {},
+    searchHistory: loadSearch()
 }
 
 export default state
