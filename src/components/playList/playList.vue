@@ -4,7 +4,7 @@
             <div class="list-wrapper" @click.stop>
                 <div class="list-header">
                     <h1 class="title">
-                        <i class="icon" :class="icon-mode"></i>
+                        <i class="icon iconfont" :class="iconMode"></i>
                         <span class="text">标题</span>
                         <span class="clear" @click.stop="clearList">
                             <i class="iconfont icon-delete"></i>
@@ -46,7 +46,7 @@ import Scroll from '_c/scroll/scroll'
 import Confirm from '_c/confirm/confirm'
 import { playMode } from '@/assets/js/config'
 import { mapGetters, mapMutations, mapActions} from 'vuex'
-import { playerMixin } from '@/assets/js/config'
+import { playerMixin } from '@/assets/js/mixin'
 export default {
     mixins: [playerMixin],
     data() {

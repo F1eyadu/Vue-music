@@ -115,7 +115,7 @@ import Scroll from '_c/scroll/scroll'
 import PlayList from '_c/playList/playList'
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
-import { playerMixin } from '@/assets/js/config'
+import { playerMixin } from '@/assets/js/mixin'
 export default {
     mixins: [playerMixin],
     data() {
