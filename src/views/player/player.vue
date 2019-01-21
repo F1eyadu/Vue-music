@@ -148,12 +148,8 @@ export default {
         },
         ...mapGetters([
             'fullScreen',
-            'playList',
-            'currentSong',
             'playing',
-            'currentIndex',
-            'mode',
-            'sequenceList'
+            'currentIndex'
         ])
     },
     methods: {
@@ -228,24 +224,6 @@ export default {
         durationchange (e) {
             this.duration = e.target.duration
         },
-        changeMode() {
-            const mode = (this.mode + 1) % 3
-            this.SET_MODE(mode)
-            let list = null
-            if(mode === playMode.random) {
-                list = shuffle(this.sequenceList)
-            }else{
-                list = this.sequenceList
-            }
-            this._resetCurrentIndex(list)
-            this.SET_PLAT_LIST(list)
-        },
-        _resetCurrentIndex(list) {
-            let index = list.findIndex((value) => {
-                return value.id === this.currentSong.id
-            })
-            this.SET_CURRENT_INDEX(index)
-        },
         format(interval) {
             interval = interval | 0
             const minute = this._pad(interval / 60 | 0)
@@ -272,12 +250,7 @@ export default {
             this.$refs.playlist.show()
         },
         ...mapMutations([
-            'SET_FULL_SCREEN',
-            'SET_PLAYING',
-            'SET_CURRENT_INDEX',
-            'SET_MODE',
-            'SET_PLAT_LIST',
-            'SET_CURRENT_INDEX'
+            'SET_FULL_SCREEN'
         ]),
         enter(el, done) {
             const{ x, y, scale} = this._getPosAndScale()

@@ -4,8 +4,8 @@
             <div class="list-wrapper" @click.stop>
                 <div class="list-header">
                     <h1 class="title">
-                        <i class="icon iconfont" :class="iconMode"></i>
-                        <span class="text">标题</span>
+                        <i class="icon iconfont" :class="iconMode" @click="changeMode"></i>
+                        <span class="text">{{modeTags}}</span>
                         <span class="clear" @click.stop="clearList">
                             <i class="iconfont icon-delete"></i>
                         </span>
@@ -28,7 +28,7 @@
                     </transition-group>
                 </scroll>
                 <div class="list-operate">
-                    <div class="add">
+                    <div class="add" @click="addSong" >
                         <i class="iconfont icon-add"></i>
                         <span class="text">添加歌曲到队列</span>
                     </div>
@@ -38,12 +38,14 @@
                 </div>
             </div>
             <confirm ref="confirm" @confirm="confirmClear" text="是否清空播放列表" confirmBtnText="清空"></confirm>
+            <add-song ref="addsong"></add-song>
         </div>
     </transition>
 </template>
 <script>
 import Scroll from '_c/scroll/scroll'
 import Confirm from '_c/confirm/confirm'
+import AddSong from '_c/add-song/add-song'
 import { playMode } from '@/assets/js/config'
 import { mapGetters, mapMutations, mapActions} from 'vuex'
 import { playerMixin } from '@/assets/js/mixin'
@@ -56,12 +58,9 @@ export default {
         }
     },
     computed: {
-        ...mapGetters([
-            'sequenceList',
-            'currentSong',
-            'playList',
-            'mode'
-        ])
+        modeTags() {
+            return this.mode === playMode.random ? '随机播放' : this.mode === playMode.sequence ? '顺序播放' : '单曲循环'
+        }  
     },
     methods: {
         selectItem(item, index) {
@@ -109,10 +108,9 @@ export default {
             this.deleteSongList()
             this.hide()
         },
-        ...mapMutations([
-            'SET_CURRENT_INDEX',
-            'SET_PLAYING'
-        ]),
+        addSong() {
+            this.$refs.addsong.show()
+        },
         ...mapActions([
             'deleteSong',
             'deleteSongList'
@@ -128,7 +126,8 @@ export default {
     },
     components: {
         Scroll,
-        Confirm
+        Confirm,
+        AddSong
     }
 }
 </script>
@@ -169,7 +168,7 @@ export default {
                 align-items: center;
                 .icon{
                     margin-right: px2rem(10px);
-                    font-size: px2rem(30px);
+                    font-size: px2rem(15px);
                     color: $color-theme-d;
                 }
                 .text{
