@@ -51,6 +51,7 @@ export default {
             this.page = 0
             this.hasMore = true
             this.$refs.scroll.scrollTo(0, 0)
+            this.songs = []
             if(!this.query) return
             searchSuggest(this.query, this.page).then( res => {
                 this.songs.push(...res.songs)
@@ -88,6 +89,9 @@ export default {
         },
         listScroll() {
             this.$emit('listScroll')
+        },
+        refresh() {
+            this.$refs.scroll.refresh()
         },
         ...mapActions([
             'insertSong'

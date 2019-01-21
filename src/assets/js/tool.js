@@ -34,7 +34,8 @@ function insertArray (arr, val, compose, maxLen) {
     const index = arr.findIndex(compose)
     if(index === 0) {
         return
-    }else if( index > 0) {
+    }
+    if( index > 0) {
         arr.splice(index ,1)
     }
     arr.unshift(val)
@@ -47,7 +48,7 @@ export function saveSearch(query) {
     insertArray(searches, query, (item) => {
         return item === query
     }, SEARCH_MAX_LENGTH)
-    storage.get(SEARCH_KEY, searches)
+    storage.set(SEARCH_KEY, searches)
     return searches
 }
 
@@ -69,4 +70,9 @@ export function deleteSearch(query) {
     })
     storage.set(SEARCH_KEY, searches)
     return searches
+}
+
+export function clearSearch() {
+    storage.remove(SEARCH_KEY)
+    return []
 }

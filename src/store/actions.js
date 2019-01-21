@@ -1,5 +1,5 @@
 import { playMode} from '@/assets/js/config'
-import { shuffle, saveSearch, deleteSearch} from '@/assets/js/tool'
+import { shuffle, saveSearch, deleteSearch, clearSearch} from '@/assets/js/tool'
 import { SET_PLAYING, SET_FULL_SCREEN, SET_PLAT_LIST, SET_SEQUENCE_LIST, SET_CURRENT_INDEX, SET_MODE, SET_SEARCH_HISTORY } from './mutationTypes'
 const actions = {
     selectPlay({commit, state}, {list, index}) {
@@ -64,7 +64,33 @@ const actions = {
     },
     deleteSearchHistory({commit}, query) {
         commit(SET_SEARCH_HISTORY, deleteSearch(query))
-    }   
+    },
+    clearSearchHistory({commit}) {
+        commit(SET_SEARCH_HISTORY, clearSearch())
+    },
+     deleteSong({commit, state},song) {
+        let playList = state.playList.slice()
+        let sequenceList = state.sequenceList.slice()
+        let currentIndex = state.currentIndex
+        let pIndex = findIndexs(playList, song)
+        playList.splice(pIndex, 1)
+        let sIndex = findIndexs(sequenceList, song)
+        sequenceList.splice(sIndex, 1)
+        if(currentIndex > pIndex || currentIndex === playList.length) {
+            currentIndex --  
+        }
+        commit(SET_PLAT_LIST, playList)
+        commit(SET_SEQUENCE_LIST, sequenceList)
+        commit(SET_CURRENT_INDEX, currentIndex)
+        const playingState = playList.length > 0
+        commit(SET_PLAYING, playingState)
+     }, 
+     deleteSongList({commit}) {
+        commit(SET_PLAT_LIST, [])
+        commit(SET_SEQUENCE_LIST, [])
+        commit(SET_CURRENT_INDEX, -1)
+        commit(SET_PLAYING, false)
+     }
 }
 
 const findIndexs = (list, song) => {

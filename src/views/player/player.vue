@@ -92,11 +92,12 @@
                         <div @click.stop="togglePlaying" class="iconfont" :class="playIcon"></div>
                     </process-circle>
                 </div>
-                <div class="control">
+                <div class="control" @click.stop="showPlayList">
                     <div class="iconfont icon-list"></div>
                 </div>
             </div>
         </transition>
+        <play-list ref="playlist"></play-list>
         <audio v-if="url" @durationchange="durationchange" @timeupdate="updateTime" ref="audio" :src="url" @canplay="ready" @error="error" @ended="ended"></audio>
     </div>
 </template>
@@ -107,13 +108,16 @@ import { getSongUrl, getSongLyric} from '_api/song'
 import { prefixStyle } from '@/assets/js/dom'
 import ProcessBar from '_c/process-bar/process-bar'
 import ProcessCircle from '_c/process-circle/process-circle'
-import {playMode } from '@/assets/js/config'
 import {shuffle } from '@/assets/js/tool'
+import {playMode } from '@/assets/js/config'
 import Lyric from 'lyric-parser'
 import Scroll from '_c/scroll/scroll'
+import PlayList from '_c/playList/playList'
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
+import { playerMixin } from '@/assets/js/config'
 export default {
+    mixins: [playerMixin],
     data() {
         return {
             url: '',
@@ -141,9 +145,6 @@ export default {
         },
         percent() {
             return this.currentTime / this.duration
-        },
-        iconMode() {
-            return this.mode === playMode['sequence'] ? 'icon-list': this.mode === playMode['loop'] ? 'icon-loop':'icon-random'
         },
         ...mapGetters([
             'fullScreen',
@@ -266,6 +267,9 @@ export default {
             }if(this.currentLyric) {
                 this.currentLyric.seek(percent * this.duration * 1000)
             }
+        },
+        showPlayList() {
+            this.$refs.playlist.show()
         },
         ...mapMutations([
             'SET_FULL_SCREEN',
@@ -391,6 +395,7 @@ export default {
     },
     watch: {
         currentSong(newVal, oldVal) {
+            if(!newVal.id)
             if(newVal.id === oldVal.id) return
             if(this.currentLyric &&  this.currentLyric.stop) {
                 this.currentLyric.stop()
@@ -423,7 +428,8 @@ export default {
     components: {
         ProcessBar,
         ProcessCircle,
-        Scroll
+        Scroll,
+        PlayList
     }
 }
 </script>

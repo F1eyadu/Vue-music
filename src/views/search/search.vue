@@ -15,7 +15,7 @@
                     <div class="search-history" v-show="getHistory.length > 0">
                         <h1 class="title">
                             <span class="text">搜索历史</span>
-                            <span class="clear" >
+                            <span class="clear" @click="showConfirm">
                                 <i class="iconfont icon-delete"></i>
                             </span>
                         </h1>
@@ -24,9 +24,10 @@
                 </div>
             </scroll>
         </div>
-        <div class="search-result" v-show="query">
-            <search-suggest @select="saveSearch"  @listScroll="blurInput" :query="query"></search-suggest>
+        <div class="search-result" v-show="query" ref="searchResult">
+            <search-suggest ref="suggest" @select="saveSearch"  @listScroll="blurInput" :query="query"></search-suggest>
         </div>
+        <confirm ref="confirm" @confirm="clearSearchHistory" text="是否清空所有搜索历史" confirmBtnText="清空" ></confirm>
     </div>
 </template>
 <script>
@@ -34,11 +35,12 @@ import SearchBox from '_c/searchBox/searchBox'
 import SearchSuggest from '_c/suggest/suggest'
 import SearchList from '_c/searchList/searchList'
 import Scroll from '_c/scroll/scroll'
+import Confirm  from "_c/confirm/confirm";
 import { searchHot } from '_api/search'
 import { mapActions, mapGetters} from 'vuex'
-import { searchMixin } from '@/assets/js/mixin'
+import { searchMixin, playlistMixin } from '@/assets/js/mixin'
 export default {
-    mixins: [searchMixin],
+    mixins: [searchMixin, playlistMixin],
     data() {
         return {
             hots: [],
@@ -54,24 +56,34 @@ export default {
         }
     },
     methods: {
+        handlePlayList(playList) {
+            const bottom = playList.length > 0 ? '60px' : ''
+            this.$refs.searchResult.style.bottom = bottom
+            this.$refs.suggest.refresh()
+            this.$refs.shortcutWrapper.style.bottom = bottom
+            this.$refs.shortcut.refresh()
+        },
         _getSearchHot() {
             searchHot().then( res => {
                 this.hots = res
             })
         },
-        
         saveSearch() {
             this.saveSearchHistory(this.query)
         },
+        showConfirm() {
+            this.$refs.confirm.show()
+        },
         ...mapActions([
-            'saveSearchHistory'
+            'clearSearchHistory'
         ])
     },
     components:{ 
         SearchBox,
         SearchSuggest,
         SearchList,
-        Scroll
+        Scroll,
+        Confirm
     }
 }
 </script>

@@ -1,4 +1,5 @@
 import { mapGetters, mapActions} from 'vuex'
+import {playMode } from '@/assets/js/config'
 export const playlistMixin = {
     computed: {
         ...mapGetters([
@@ -53,4 +54,12 @@ export const searchMixin = {
             'deleteSearchHistory'
         ])
     }
+}
+
+export const playerMixin ={
+    computed: {
+        iconMode() {
+            return this.mode === playMode['sequence'] ? 'icon-list': this.mode === playMode['loop'] ? 'icon-loop':'icon-random'
+        },
+    },
 }
