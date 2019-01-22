@@ -1,5 +1,5 @@
 import { playMode} from '@/assets/js/config'
-import { loadSearch } from '@/assets/js/tool'
+import { loadSearch, loadPlay, loadLove } from '@/assets/js/tool'
 const state = {
     singer: {},
     playing: false,
@@ -10,7 +10,9 @@ const state = {
     currentIndex: -1,
     desc: {},
     topList: {},
-    searchHistory: loadSearch()
+    searchHistory: loadSearch(),
+    playHistory: loadPlay(),
+    loveList: loadLove()
 }
 
 export default state

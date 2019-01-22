@@ -36,6 +36,8 @@ export default {
     @import '@/assets/scss/variable';
     .progress-circle{
         position: relative;
+        display: flex;
+        align-items: center;
         circle{
             stroke-width: px2rem(8px);
             transform-origin: center;

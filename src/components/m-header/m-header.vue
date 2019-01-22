@@ -2,6 +2,9 @@
     <div class="m-header">
         <div class="icon"></div>
         <h1 class="text">Chicken Music</h1>
+        <router-link to="/userCenter" tag="div" class="mine">
+            <i class="iconfont icon-mine"></i>
+        </router-link>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -27,6 +30,17 @@
         vertical-align: top;
         line-height: px2rem(44px);
         font-size: $font-size-large
+    }
+    .mine{
+        position: absolute;
+        top: 0;
+        right: 0;
+        .icon-mine{
+            display: block;
+            padding: px2rem(12px);
+            font-size: px2rem(20px);
+            color: $color-theme;
+        }
     }
 }
 </style>

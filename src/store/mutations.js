@@ -30,6 +30,12 @@ const mutations = {
     },
     SET_SEARCH_HISTORY(state, history) {
         state.searchHistory = history
+    },
+    SET_PLAY_HISTORY(state, history) {
+        state.playHistory = history
+    },
+    SET_LOVE_LIST(state, list) {
+        state.loveList = list
     }
 }
 

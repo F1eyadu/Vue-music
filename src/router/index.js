@@ -44,6 +44,11 @@ export default new Router({
           component: () => import(/* webpackChunkName: rank-detail" */ '_c/topList/topList.vue')
         }
       ]
+    },
+    {
+      path: '/userCenter',
+      name: 'center',
+      component:() => import(/* webpackChunkName: "center" */ '@/views/user-center/user-center.vue'),
     }
   ]
 })

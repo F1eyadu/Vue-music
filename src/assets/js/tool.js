@@ -3,6 +3,12 @@ import storage from 'good-storage'
 const SEARCH_KEY = '_search_'
 const SEARCH_MAX_LENGTH = 15
 
+const PLAY_KEY = '_play_'
+const PLAY_MAX_LENGTH = 250
+
+const LOVE_KEY = '_love_'
+const LOVE_MAX_LENGTH = 250
+
 export function  shuffle(arr) {
     let _arr = arr.slice()
     for(let i=0; i<_arr.length;i++) {
@@ -76,3 +82,39 @@ export function clearSearch() {
     storage.remove(SEARCH_KEY)
     return []
 }
+
+
+export function savePlay(song) {
+    let songs = storage.get(PLAY_KEY, [])
+    insertArray(songs, song, (item) => {
+        return item.id === song.id
+    }, PLAY_MAX_LENGTH)
+    storage.set(PLAY_KEY, songs)
+    return songs
+}
+
+export function loadPlay() {
+    return storage.get(PLAY_KEY, []) 
+ }
+
+ export function saveLove(song) {
+    let songs = storage.get(LOVE_KEY, [])
+    insertArray(songs, song, (item) => {
+        return item.id === song.id
+    }, LOVE_MAX_LENGTH)
+    storage.set(LOVE_KEY, songs)
+    return songs
+}
+
+export function deleteLove(query) {
+    let searches = storage.get(LOVE_KEY, [])
+    deleteFromArray(searches, (item) => {
+        return item.id === query.id
+    })
+    storage.set(LOVE_KEY, searches)
+    return searches
+}
+
+export function loadLove() {
+    return storage.get(LOVE_KEY, []) 
+ }

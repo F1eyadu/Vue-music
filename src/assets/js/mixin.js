@@ -66,7 +66,8 @@ export const playerMixin ={
             'sequenceList',
             'currentSong',
             'playList',
-            'mode'
+            'mode',
+            'loveList'
         ])
     },
     methods: {
@@ -88,11 +89,35 @@ export const playerMixin ={
             })
             this.SET_CURRENT_INDEX(index)
         },
+        toggleLove(song) {
+            if(this.isLove(song)) {
+                this.deleteLoveList(song)
+            }else{
+                this.saveLoveList(song)
+            }
+        },
+        getLoveIcon(song) {
+            if(this.isLove(song)) {
+                return `icon-love`
+            }else{
+                return `icon-notlove`
+            }
+        },
+        isLove(song) {
+            const index = this.loveList.findIndex((item) => {
+                return item.id === song.id  
+            })
+            return index > -1
+        },
         ...mapMutations([
             'SET_PLAYING',
             'SET_CURRENT_INDEX',
             'SET_MODE',
             'SET_PLAT_LIST'
+        ]),
+        ...mapActions([
+            'saveLoveList',
+            'deleteLoveList'
         ])
     },
 }

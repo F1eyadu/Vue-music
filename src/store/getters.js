@@ -33,6 +33,12 @@ const getters = {
     },
     getHistory(state) {
         return state.searchHistory
+    },
+    playHistory(state) {
+        return state.playHistory
+    },
+    loveList(state) {
+        return state.loveList
     }
 }
 export default getters

@@ -72,7 +72,7 @@
                             <i @click="next" class="icon-next"></i>
                         </div>
                         <div class="iconfont icon i-right">
-                            <i class="icon-love"></i>
+                            <i @click="toggleLove(currentSong)" :class="getLoveIcon(currentSong)"></i>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
     </div>
 </template>
 <script>
-import { mapGetters, mapMutations} from 'vuex'
+import { mapGetters, mapMutations, mapActions} from 'vuex'
 import animations from 'create-keyframe-animation'
 import { getSongUrl, getSongLyric} from '_api/song'
 import { prefixStyle } from '@/assets/js/dom'
@@ -214,6 +214,7 @@ export default {
         },
         ready() {
             this.songReady = true
+            this.savePlayHistory(this.currentSong)
         },
         error() {
             this.songReady = false
@@ -251,6 +252,9 @@ export default {
         },
         ...mapMutations([
             'SET_FULL_SCREEN'
+        ]),
+        ...mapActions([
+            'savePlayHistory' 
         ]),
         enter(el, done) {
             const{ x, y, scale} = this._getPosAndScale()
@@ -368,7 +372,7 @@ export default {
     },
     watch: {
         currentSong(newVal, oldVal) {
-            if(!newVal.id)
+            if(!newVal.id) return
             if(newVal.id === oldVal.id) return
             if(this.currentLyric &&  this.currentLyric.stop) {
                 this.currentLyric.stop()
