@@ -98,7 +98,7 @@
             </div>
         </transition>
         <play-list ref="playlist"></play-list>
-        <audio v-if="url" @durationchange="durationchange" @timeupdate="updateTime" ref="audio" :src="url" @canplay="ready" @error="error" @ended="ended"></audio>
+        <audio v-if="url" @durationchange="durationchange" @timeupdate="updateTime" ref="audio" :src="url" @play="ready" @error="error" @ended="ended"></audio>
     </div>
 </template>
 <script>
@@ -170,6 +170,7 @@ export default {
             if(!this.songReady) return
             if(this.playList.length === 1) {
                 this.loop()
+                return
             }else{
                 let index = this.currentIndex - 1
                 if( index === -1) {
@@ -186,6 +187,7 @@ export default {
             if(!this.songReady) return
             if(this.playList.length === 1) {
                 this.loop()
+                return
             }else{
                 let index = this.currentIndex + 1
                 if( index === this.playList.length) {
